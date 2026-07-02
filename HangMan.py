@@ -1,125 +1,60 @@
-import tkinter as tk
 import random
 
-class HangmanGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Hangman Game")
-        self.root.geometry("400x400")
-        
-        # Game state variables
-        self.words = ["python", "script", "coding", "syntax", "hacker", "cybersecurity", "hack", "javascript", "HTTP", "protocol"]
-        self.word = ""
-        self.guessed_letters = []
-        self.attempts = 6
-        
-        # --- UI Elements ---
-        
-        # Displays the word with underscores
-        self.word_label = tk.Label(root, text="", font=("Helvetica", 24))
-        self.word_label.pack(pady=30)
-        
-        # Displays attempts remaining
-        self.info_label = tk.Label(root, text="", font=("Helvetica", 14))
-        self.info_label.pack(pady=5)
-        
-        # Text box for the player to type a letter
-        self.entry = tk.Entry(root, font=("Helvetica", 18), width=5, justify='center')
-        self.entry.pack(pady=10)
-        # Allows pressing the "Enter" key to submit a guess
-        self.root.bind('<Return>', lambda event: self.guess_letter())
-        
-        # Button to submit the guess
-        self.guess_button = tk.Button(root, text="Guess", command=self.guess_letter, font=("Helvetica", 12))
-        self.guess_button.pack(pady=5)
-        
-        # Label to show errors, warnings, or win/loss messages
-        self.message_label = tk.Label(root, text="", font=("Helvetica", 12))
-        self.message_label.pack(pady=15)
-        
-        # Button to restart the game
-        self.reset_button = tk.Button(root, text="Restart Game", command=self.start_game, font=("Helvetica", 10))
-        self.reset_button.pack(pady=10)
-        
-        # Start the first game automatically
-        self.start_game()
+sectors = {
+    "Technology": ["PYTHON", "ALGORITHM", "DATABASE", "NETWORK"],
+    "Finance": ["INVESTMENT", "EQUITY", "DIVIDEND", "PORTFOLIO"],
+    "Healthcare": ["HOSPITAL", "DIAGNOSIS", "VACCINE", "SURGERY"],
+    "Space": ["GALAXY", "ORBIT", "SATELLITE", "GRAVITY"]
+}
 
-    def start_game(self):
-        """Resets the game state for a new round."""
-        self.word = random.choice(self.words)
-        self.guessed_letters = []
-        self.attempts = 6
-        
-        # Reset UI elements
-        self.message_label.config(text="")
-        self.entry.config(state='normal')
-        self.guess_button.config(state='normal')
-        self.update_ui()
+def play_game():
+    category = random.choice(list(sectors.keys()))
+    word = random.choice(sectors[category]) 
+    
+    guessed_letters = []
+    attempts = 6
 
-    def update_ui(self):
-        """Updates the word display and the attempts counter."""
-        display_list = []
-        for char in self.word:
-            if char in self.guessed_letters:
-                display_list.append(char)
+    print("\n                NEW GAME             ")
+    print("\n ")
+    print(f"Clue: This word is related to the '{category}' sector.")
+    print("Guess one letter at a time!")
+
+    while attempts > 0:
+        print(f"\nAttempts remaining: {attempts}")
+        
+        display = ""
+        for char in word:
+            if char in guessed_letters:
+                display += char + " "
             else:
-                display_list.append("_")
-                
-        self.word_label.config(text=" ".join(display_list))
-        self.info_label.config(text="Attempts remaining: " + str(self.attempts))
-
-    def guess_letter(self):
-        """Processes the player's input from the text box."""
-        # Get the letter and immediately clear the entry box
-        guess = self.entry.get().lower()
-        self.entry.delete(0, tk.END)
+                display += "_ "
         
-        # Validation checks
-        if len(guess) != 1 or not guess.isalpha():
-            self.message_label.config(text="Invalid input. Enter a single letter.", fg="red")
+        print(display.strip())
+
+        if "_" not in display:
+            print(f"\nCongratulations! You won! The word was {word}")
             return
-            
-        if guess in self.guessed_letters:
-            self.message_label.config(text="You already guessed that letter.", fg="orange")
-            return
-            
-        # Process a valid, new guess
-        self.guessed_letters.append(guess)
+
+        guess = input("Guess a letter: ").upper()
+
+        if not guess.isalpha() or len(guess) != 1:
+            print("Invalid Input: Please enter exactly one letter.")
+            continue
         
-        if guess not in self.word:
-            self.attempts -= 1
-            self.message_label.config(text="Incorrect guess.", fg="red")
-        else:
-            self.message_label.config(text="Good guess!", fg="green")
-            
-        self.update_ui()
-        self.check_game_over()
+        if guess in guessed_letters:
+            print("Already Guessed: You already tried that letter!")
+            continue
 
-    def check_game_over(self):
-        """Checks if the player has won or lost the game."""
-        # Check for a win (no more underscores needed)
-        won = True
-        for char in self.word:
-            if char not in self.guessed_letters:
-                won = False
-                break
-                
-        if won:
-            self.message_label.config(text="You won! The word was " + self.word, fg="green")
-            self.end_game()
-        # Check for a loss (0 attempts left)
-        elif self.attempts == 0:
-            self.message_label.config(text="Game over. The word was " + self.word, fg="red")
-            self.end_game()
+        guessed_letters.append(guess)
 
-    def end_game(self):
-        """Disables the input fields when the game ends."""
-        self.entry.config(state='disabled')
-        self.guess_button.config(state='disabled')
+        if guess not in word:
+            attempts -= 1
 
-# --- Run the Application ---
+    print(f"\nGame Over! You lost! The word was {word}")
+
 if __name__ == "__main__":
-    # Create the main window and start the GUI application
-    main_window = tk.Tk()
-    app = HangmanGUI(main_window)
-    main_window.mainloop()
+    while True:
+        play_game()
+        play_again = input("\nDo you want to play again? (Y/N): ").upper()
+        if play_again != "Y":
+            break
